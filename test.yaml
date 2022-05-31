@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: z-test
+spec:
+  serviceAccount: joe123-job-reader
+  containers:
+  - name: waiter
+    image: owainperry/wait-for-job-and-open-port:0.1.1
+    command: ["/root/wait-for-job-and-open-port"]
+    args:
+      - "-labels=app.kubernetes.io/name:redis-seeder"
+      - "-labels=app.kubernetes.io/name:postgres"
+      - "-namespace=joe123"

@@ -10,12 +10,11 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["-kubeconfig",
-                "/Users/owainperry/git/github.com/owainperry/post-processor/kube-admin.yaml",
-                "-labels",
-                "app.kubernetes.io/name:redis-seeder",
-                "-labels",
-                "app.kubernetes.io/name:postgres"
+            "args": [
+                "-incluster=false",
+                "-kubeconfig=/Users/owainperry/git/github.com/owainperry/post-processor/kube-admin.yaml",
+                "-labels=app.kubernetes.io/name:redis-seeder",
+                "-labels=app.kubernetes.io/name:postgres",
             ]
         }
     ]

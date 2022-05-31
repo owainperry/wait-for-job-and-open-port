@@ -1,20 +1,3 @@
-/*
-Copyright 2016 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-// Note: the example only works with the code within the same release/branch.
 package main
 
 import (
@@ -35,6 +18,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/rest"
 
+	
 	// Uncomment to load all auth plugins
 	// _ "k8s.io/client-go/plugin/pkg/client/auth"
 	//
@@ -55,6 +39,10 @@ func (j *JobHunter) CompletedJob(namespace string, labelKey string, labelValue s
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 		Limit:         5,
 	}
+
+	listOptions = metav1.ListOptions{}
+	
+
 	jobs, err := j.clientset.BatchV1().Jobs(namespace).List(context.TODO(), listOptions)
 	if err != nil {
 		return 0, 0, err
@@ -108,10 +96,6 @@ func main() {
 	var retries *int
 	retries = flag.Int("retries", 600, "number of retries")
 
-	var namespace *string
-	namespace = flag.String("namespace", "", "then namespace to use")
-
-
 	var inCluster *bool
 	inCluster = flag.Bool("incluster",true,"use incluster config")
 
@@ -139,6 +123,15 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+	
+
+	clientCfg, _ := clientcmd.NewDefaultClientConfigLoadingRules().Load()
+    namespace := clientCfg.Contexts[clientCfg.CurrentContext].Namespace
+
+    if namespace == "" {
+        namespace = "default"
+    }
+    log.Printf("namespace: %s",namespace)
 
 	for i := 0; i < *retries; i++ {
 		jh := NewJobHunter(clientset)
@@ -146,10 +139,11 @@ func main() {
 		for l := range labelsList {
 			fmt.Println()
 			bits := strings.Split(labelsList[l], ":")
-			total, completed, err := jh.CompletedJob(*namespace, bits[0], bits[1])
+			total, completed, err := jh.CompletedJob(namespace, bits[0], bits[1])
 			log.Printf("jobs with label: %s = %s total jobs: %d completed %d", bits[0], bits[1], total, completed)
 			if err != nil {
 				log.Printf("Error: %v", err)
+				allComplete = false
 			}
 			if total != completed {
 				allComplete = false
