@@ -11,4 +11,4 @@ spec:
     args:
       - "-labels=app.kubernetes.io/name:redis-seeder"
       - "-labels=app.kubernetes.io/name:postgres"
-      - "-namespace=joe123"
+

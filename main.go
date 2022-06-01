@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	//"k8s.io/apimachinery/pkg/api/errors"
+	"os"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
@@ -18,15 +18,6 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/rest"
 
-	
-	// Uncomment to load all auth plugins
-	// _ "k8s.io/client-go/plugin/pkg/client/auth"
-	//
-	// Or uncomment to load specific auth plugins
-	// _ "k8s.io/client-go/plugin/pkg/client/auth/azure"
-	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
-	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 )
 
 type JobHunter struct {
@@ -102,6 +93,13 @@ func main() {
 	flag.Var(&labelsList, "labels", "key value pair of lables to find jobs using")
 
 	flag.Parse()
+
+	namespace := os.Getenv("NAMESPACE")
+	if namespace == "" {
+		namespace = "default"
+	}
+	log.Printf("namespace: %s",namespace)
+
 	var config *rest.Config
 	var err error
 
@@ -124,15 +122,6 @@ func main() {
 		panic(err.Error())
 	}
 	
-
-	clientCfg, _ := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-    namespace := clientCfg.Contexts[clientCfg.CurrentContext].Namespace
-
-    if namespace == "" {
-        namespace = "default"
-    }
-    log.Printf("namespace: %s",namespace)
-
 	for i := 0; i < *retries; i++ {
 		jh := NewJobHunter(clientset)
 		allComplete := true
